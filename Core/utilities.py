@@ -3,31 +3,45 @@ import scipy
 from matplotlib import pyplot as plt
 
 
-def show_image_rgb(image, autoscale: bool = False):
+def show_image_rgb(image, vmax: int = None, autoscale: bool = False):
     plt.figure()
     if autoscale:
         plt.imshow(image)
-    else:
+    elif vmax:
+        plt.imshow(image, vmin=0, vmax=vmax)
+    elif np.max(image) > 1:
         plt.imshow(image, vmin=0, vmax=255)
+    else:
+        plt.imshow(image, vmin=0, vmax=1)
+
+
     plt.colorbar()
 
 
-def show_image_gray(image, autoscale: bool = False):
+def show_image_gray(image, vmax: int = None, autoscale: bool = False):
     plt.figure()
     if autoscale:
         plt.imshow(image, cmap='gray')
+    elif vmax:
+        plt.imshow(image, cmap='gray', vmin=0, vmax=vmax)
+    elif np.max(image) > 1:
+        plt.imshow(image, cmap='gray', vmin=0, vmax=255)
     else:
         plt.imshow(image, cmap='gray', vmin=0, vmax=1)
 
     plt.colorbar()
 
 
-def show_plot(*args, title: str):
-    plt.figure(figsize=(8, 4))
+def show_plot(*args, title: str = "Plot", color: str | int = 'black', reuse_figure: bool = False):
+    if not reuse_figure:
+        plt.figure(figsize=(8, 4))
+    else:
+        color = np.random.rand(3, )
+
     if len(args) == 2:
-        plt.plot(args[0], args[1], color='black')
-    if len(args) == 1:
-        plt.plot(args[0], color='black')
+        plt.plot(args[0], args[1], color=color)
+    elif len(args) == 1:
+        plt.plot(args[0], color=color)
     else:
         raise ValueError
 
@@ -35,6 +49,13 @@ def show_plot(*args, title: str):
     plt.xlabel('Nivel de gri')
     plt.ylabel('Număr pixeli')
     plt.grid(True)
+
+
+def show_hist(image, bins: int = 100, normalize: bool = True, title: str = 'Histograma'):
+    hist, bins = np.histogram(image, bins=bins)
+    if normalize:
+        hist = hist / np.sum(hist)
+    show_plot(bins[:len(bins)-1], hist, title=title)
 
 
 def T(u, r):
@@ -204,3 +225,21 @@ def lexicographic_histogram_equalization(image):
     image_out = np.reshape(image_out, image_shape)
 
     return image_out
+
+
+def MAE(imgref, img):
+    if imgref.shape != img.shape:
+        raise ValueError("Different image shapes.")
+    return np.average(np.abs(img - imgref))
+
+
+def NMAE(imgref, img):
+    if imgref.shape != img.shape:
+        raise ValueError("Different image shapes.")
+    return np.average(np.abs(img - imgref)/imgref)
+
+
+def MSE(imgref, img):
+    if imgref.shape != img.shape:
+        raise ValueError("Different image shapes.")
+    return np.average((img - imgref)**2)
