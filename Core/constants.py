@@ -1,1 +1,1 @@
-IMAGE_PATH = '../Images/BlackColourWhite.png'
+IMAGE_PATH = '../Images/lena.png'

@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 from skimage import io, color
-from Core.utilities import show_image_rgb, show_image_gray, show_plot, apply_conv_filter, \
-    lexicographic_histogram_equalization
+from Core.utilities import show_image_rgb, show_image_gray, show_plot
+from Core.denoise import apply_conv_filter, lexicographic_histogram_equalization
 
 IMAGE_PATH = '../Images/lena.png'
 

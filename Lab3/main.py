@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import scipy
 from skimage import io, color
 
-from Core.utilities import show_image_rgb, show_image_gray, show_plot, T, expandare_liniara, prelucrare_scalara, HE, \
-    HE_with_window, CLHE
+from Core.utilities import show_image_rgb, show_image_gray, show_plot, T, expandare_liniara, prelucrare_scalara
+from Core.denoise import HE, HE_with_window, CLHE
 
 IMAGE_PATH = '../Images/uneven-face-mic.png'
 

@@ -1,8 +1,7 @@
-from matplotlib import pyplot as plt
-import numpy as np
 import scipy
-from skimage import io, color
+from skimage import io
 
+from Core.accuracy import MSE
 from Core.constants import *
 from Core.utilities import *
 
