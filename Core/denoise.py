@@ -194,3 +194,92 @@ def median_vectorial(img, W):
             img_out[x - W, y - W, :] = median_vectorial
 
     return img_out
+
+
+def median_WMF(img, W):
+    if np.max(img) > 1:
+        img = img / 255.0
+
+    [X, Y, Z] = np.shape(img)
+    dim = 2 * W + 1
+    kernel = np.zeros((dim, dim))
+    kernel[W, W] = 1
+
+    img_bordat = np.zeros((X + dim - 1, Y + dim - 1, Z))
+    img_bordat[:, :, 0] = scipy.signal.convolve2d(img[:, :, 0], kernel, "full", "symm")
+    img_bordat[:, :, 1] = scipy.signal.convolve2d(img[:, :, 1], kernel, "full", "symm")
+    img_bordat[:, :, 2] = scipy.signal.convolve2d(img[:, :, 2], kernel, "full", "symm")
+
+    img_out = np.zeros((X, Y, Z))
+    distante_agregate = np.zeros((dim, dim))
+    for x in range(W, X + W):
+        for y in range(W, Y + W):
+            valori_selectate = retrieve_window(img_bordat, (x, y), W)
+            valori_selectate_flatten = valori_selectate.reshape(-1, Z)
+
+            for i in range(0, dim):
+                for j in range(0, dim):
+                    R = valori_selectate[i, j, 0]
+                    G = valori_selectate[i, j, 1]
+                    B = valori_selectate[i, j, 2]
+
+                    diffR = valori_selectate_flatten[:, 0] - R
+                    diffG = valori_selectate_flatten[:, 1] - G
+                    diffB = valori_selectate_flatten[:, 2] - B
+                    diffR = np.abs(diffR)
+                    diffG = np.abs(diffG)
+                    diffB = np.abs(diffB)
+                    dist = np.sum(diffR + diffG + diffB)
+                    distante_agregate[i, j] = dist
+
+            poz_min = np.argmin(distante_agregate)
+            i, j = np.unravel_index(poz_min, distante_agregate.shape)
+
+            lowest_distance_pixel = valori_selectate[i, j, :]
+
+            img_out[x - W, y - W, :] = lowest_distance_pixel
+
+    return img_out
+
+
+def filtru_liniar_adaptiv_distanta_MM(img, W):
+    if np.max(img) > 1:
+        img = img / 255.0
+
+    [X, Y, Z] = np.shape(img)
+    dim = 2 * W + 1
+    kernel = np.zeros((dim, dim))
+    kernel[W, W] = 1
+
+    img_bordat = np.zeros((X + dim - 1, Y + dim - 1, Z))
+    img_bordat[:, :, 0] = scipy.signal.convolve2d(img[:, :, 0], kernel, "full", "symm")
+    img_bordat[:, :, 1] = scipy.signal.convolve2d(img[:, :, 1], kernel, "full", "symm")
+    img_bordat[:, :, 2] = scipy.signal.convolve2d(img[:, :, 2], kernel, "full", "symm")
+
+    img_out = np.zeros((X, Y, Z))
+    distante_agregate = np.zeros((dim, dim))
+    for x in range(W, X + W):
+        for y in range(W, Y + W):
+            valori_selectate = retrieve_window(img_bordat, (x, y), W)
+            valori_selectate_flatten = valori_selectate.reshape(-1, Z)
+
+            Rmm = np.median(valori_selectate_flatten[:, 0], axis=None)
+            Gmm = np.median(valori_selectate_flatten[:, 1], axis=None)
+            Bmm = np.median(valori_selectate_flatten[:, 2], axis=None)
+
+            diffR = valori_selectate_flatten[:, 0] - Rmm
+            diffG = valori_selectate_flatten[:, 1] - Gmm
+            diffB = valori_selectate_flatten[:, 2] - Bmm
+            diffR = np.abs(diffR)
+            diffG = np.abs(diffG)
+            diffB = np.abs(diffB)
+            dist = diffR + diffG + diffB
+
+            a = 1/(dist+0.0001)
+            w = a/np.sum(a)
+
+            img_out[x - W, y - W, 0] = np.sum(valori_selectate_flatten[:, 0] * w)
+            img_out[x - W, y - W, 1] = np.sum(valori_selectate_flatten[:, 1] * w)
+            img_out[x - W, y - W, 2] = np.sum(valori_selectate_flatten[:, 2] * w)
+
+    return img_out
